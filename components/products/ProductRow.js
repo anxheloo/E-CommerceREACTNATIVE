@@ -7,7 +7,7 @@ const ProductRow = () => {
   const product = [1, 2, 3, 4];
 
   return (
-    <View style={{ marginTop: SIZES.medium }}>
+    <View style={styles.container}>
       <FlatList
         data={product}
         renderItem={({ item }) => <ProductCardView></ProductCardView>}
@@ -18,6 +18,11 @@ const ProductRow = () => {
   );
 };
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {
+    marginTop: SIZES.medium,
+    marginLeft: 12,
+  },
+});
 
 export default ProductRow;
