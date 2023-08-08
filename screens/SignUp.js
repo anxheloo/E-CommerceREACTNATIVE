@@ -16,46 +16,46 @@ import Button from "../components/Button";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+// import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // ().shape
 const validationSchema = Yup.object({
-  email: Yup.string()
-    .email("Provide a valid email address")
-    .required("Required"),
   password: Yup.string()
     .min(8, "Must be 8 characters or more")
     .required("Required"),
+  email: Yup.string()
+    .email("Provide a valid email address")
+    .required("Required"),
+  location: Yup.string()
+    .min(3, "Provide a valid location")
+    .required("Required"),
+  username: Yup.string()
+    .min(3, "Provide a valid username")
+    .required("Required"),
 });
 
-const LoginPage = ({ navigation }) => {
+const SignUp = ({ navigation }) => {
   const [loader, setLoader] = useState(false);
-  // const [responseData, setResponseData] = useState(null);
+  const [responseData, setResponseData] = useState(null);
   const [obsecureText, setObsecureText] = useState();
 
-  const login = async (values) => {
+  const registerUser = async (values) => {
     setLoader(true);
 
     try {
-      const endpoint = "http://10.0.2.2:3001/api/login";
+      const endpoint = "http://10.0.2.2:3001/api/register";
       const data = values;
       const response = await axios.post(endpoint, data);
 
-      if (response.status === 200) {
+      if (response.status === 201) {
         setLoader(false);
-        await AsyncStorage.setItem(
-          `user${response.data._id}`,
-          JSON.stringify(response.data)
-        );
-
-        await AsyncStorage.setItem("id", JSON.stringify(response.data._id));
-        navigation.replace("BottomTabBar");
-
-        // const newUser = await AsyncStorage.getItem(`user${responseData._id}`);
-        // console.log(newUser);
+        setResponseData(response.data);
+        console.log(responseData);
+        navigation.navigate("Login");
       } else {
-        Alert.alert("Error Loggin in", "Please provide valid credentials", [
+        Alert.alert("Error Registering", "Please try again!", [
           {
             text: "Cancel",
             onPress: () => console.log(),
@@ -68,21 +68,18 @@ const LoginPage = ({ navigation }) => {
         ]);
       }
     } catch (error) {
-      Alert.alert(
-        "Error",
-        "Oops, Error loggin in try again with correct credentials",
-        [
-          {
-            text: "Cancel",
-            onPress: () => console.log(),
-          },
-          {
-            text: "Continue",
-            onPress: () => console.log(),
-          },
-          // { defaultIndex: 1 },
-        ]
-      );
+      // console.log(error);
+      Alert.alert("Error", "Oops, Error registering, try again", [
+        {
+          text: "Cancel",
+          onPress: () => console.log(),
+        },
+        {
+          text: "Continue",
+          onPress: () => console.log(),
+        },
+        // { defaultIndex: 1 },
+      ]);
     } finally {
       setLoader(false);
     }
@@ -115,9 +112,14 @@ const LoginPage = ({ navigation }) => {
           <Text style={styles.title}> Unlimited Luxurious Furniture</Text>
 
           <Formik
-            initialValues={{ email: "", password: "" }}
+            initialValues={{
+              email: "",
+              password: "",
+              location: "",
+              username: "",
+            }}
             validationSchema={validationSchema}
-            onSubmit={(values) => login(values)}
+            onSubmit={(values) => registerUser(values)}
           >
             {({
               handleChange,
@@ -130,6 +132,40 @@ const LoginPage = ({ navigation }) => {
               touched,
             }) => (
               <View>
+                <View style={styles.wrapper}>
+                  <Text style={styles.label}>Username</Text>
+                  <View
+                    style={styles.inputWrapper(
+                      touched.username ? COLORS.secondary : COLORS.offwhite
+                    )}
+                  >
+                    <MaterialCommunityIcons
+                      name="face-man-profile"
+                      size={20}
+                      color={COLORS.gray}
+                      style={styles.iconStyle}
+                    ></MaterialCommunityIcons>
+                    <TextInput
+                      placeholder="Enter username"
+                      onFocus={() => {
+                        setFieldTouched("username");
+                      }}
+                      onBlur={() => {
+                        setFieldTouched("username", "");
+                      }}
+                      value={values.username}
+                      onChangeText={handleChange("username")}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      style={{ flex: 1, height: "100%" }}
+                    ></TextInput>
+                  </View>
+
+                  {touched.username && errors.username && (
+                    <Text style={styles.errorMessage}>{errors.username}</Text>
+                  )}
+                </View>
+
                 <View style={styles.wrapper}>
                   <Text style={styles.label}>Email</Text>
                   <View
@@ -210,23 +246,57 @@ const LoginPage = ({ navigation }) => {
                   )}
                 </View>
 
+                <View style={styles.wrapper}>
+                  <Text style={styles.label}>Location</Text>
+                  <View
+                    style={styles.inputWrapper(
+                      touched.location ? COLORS.secondary : COLORS.offwhite
+                    )}
+                  >
+                    <Ionicons
+                      name="location-outline"
+                      size={20}
+                      color={COLORS.gray}
+                      style={styles.iconStyle}
+                    ></Ionicons>
+                    <TextInput
+                      placeholder="Enter location"
+                      onFocus={() => {
+                        setFieldTouched("location");
+                      }}
+                      onBlur={() => {
+                        setFieldTouched("location", "");
+                      }}
+                      value={values.location}
+                      onChangeText={handleChange("location")}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      style={{ flex: 1, height: "100%" }}
+                    ></TextInput>
+                  </View>
+
+                  {touched.location && errors.location && (
+                    <Text style={styles.errorMessage}>{errors.location}</Text>
+                  )}
+                </View>
+
                 <Button
                   loader={loader}
                   onPress={() => {
                     isValid ? handleSubmit() : invalidForm();
                   }}
-                  title={"L O G I N"}
+                  title={"S I G N  U P"}
                   isValid={isValid}
                 ></Button>
 
-                <Text
+                {/* <Text
                   style={styles.registration}
                   onPress={() => {
                     navigation.navigate("SignUp");
                   }}
                 >
                   Register
-                </Text>
+                </Text> */}
               </View>
             )}
           </Formik>
@@ -238,7 +308,7 @@ const LoginPage = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   loginImage: {
-    height: SIZES.height / 2.4,
+    height: SIZES.height / 3,
     width: SIZES.width - 16,
     resizeMode: "contain",
     marginBottom: SIZES.xxLarge,
@@ -296,4 +366,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginPage;
+export default SignUp;

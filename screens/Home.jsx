@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Text,
   View,
@@ -14,34 +14,63 @@ import { Welcome } from "../components";
 import Carousel from "../components/home/Carousel";
 import Headings from "../components/home/Headings";
 import ProductRow from "../components/products/ProductRow";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const Home = () => (
-  <SafeAreaView style={{ flex: 1 }}>
-    <View style={styles.appBarWrapper}>
-      <View style={styles.appBar}>
-        <Ionicons name="location-outline" size={24}></Ionicons>
-        <Text style={styles.locationText}>Tirana, Albania</Text>
+const Home = () => {
+  const [userData, setUserData] = useState(null);
+  const [userLogin, setUserLogin] = useState(false);
 
-        <View style={{ alignItems: "flex-end" }}>
-          <View style={styles.cartCount}>
-            <Text style={styles.cartNumber}>8</Text>
+  useEffect(() => {
+    checkExistingUser();
+  }, []);
+
+  const checkExistingUser = async () => {
+    const id = await AsyncStorage.getItem("id");
+    const userId = `user${JSON.parse(id)}`;
+
+    try {
+      const currentUser = await AsyncStorage.getItem(userId);
+
+      if (currentUser !== null) {
+        const parsedData = JSON.parse(currentUser);
+        setUserData(parsedData);
+        setUserLogin(true);
+      }
+    } catch (error) {
+      console.log("Error retrieving the data: ", error);
+    }
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.appBarWrapper}>
+        <View style={styles.appBar}>
+          <Ionicons name="location-outline" size={24}></Ionicons>
+          <Text style={styles.locationText}>
+            {userData ? userData.location : "Tirane, Albania"}
+          </Text>
+
+          <View style={{ alignItems: "flex-end" }}>
+            <View style={styles.cartCount}>
+              <Text style={styles.cartNumber}>8</Text>
+            </View>
+
+            <TouchableOpacity>
+              <Entypo name="shopping-bag" size={24} color="black" />
+            </TouchableOpacity>
           </View>
-
-          <TouchableOpacity>
-            <Entypo name="shopping-bag" size={24} color="black" />
-          </TouchableOpacity>
         </View>
       </View>
-    </View>
 
-    <ScrollView>
-      <Welcome></Welcome>
-      <Carousel></Carousel>
-      <Headings></Headings>
-      <ProductRow></ProductRow>
-    </ScrollView>
-  </SafeAreaView>
-);
+      <ScrollView>
+        <Welcome></Welcome>
+        <Carousel></Carousel>
+        <Headings></Headings>
+        <ProductRow></ProductRow>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
 
 const styles = StyleSheet.create({
   appBarWrapper: {

@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { NavigationContainer } from "@react-navigation/native";
@@ -11,7 +11,9 @@ import {
   LoginPage,
   Orders,
   Favourites,
+  SignUp,
 } from "./screens";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Stack = createNativeStackNavigator();
 
@@ -75,6 +77,12 @@ export default function App() {
         <Stack.Screen
           name="Favourites"
           component={Favourites}
+          options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
+          name="SignUp"
+          component={SignUp}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

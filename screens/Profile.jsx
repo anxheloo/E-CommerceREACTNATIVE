@@ -16,10 +16,45 @@ import {
   MaterialCommunityIcons,
   SimpleLineIcons,
 } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
 const Profile = ({ navigation }) => {
   const [userData, setUserData] = useState(null);
   const [userLogin, setUserLogin] = useState(false);
+
+  useEffect(() => {
+    checkExistingUser();
+  }, []);
+
+  const checkExistingUser = async () => {
+    const id = await AsyncStorage.getItem("id");
+    const userId = `user${JSON.parse(id)}`;
+
+    try {
+      const currentUser = await AsyncStorage.getItem(userId);
+
+      if (currentUser !== null) {
+        const parsedData = JSON.parse(currentUser);
+        setUserData(parsedData);
+        setUserLogin(true);
+      }
+    } catch (error) {
+      console.log("Error retrieving the data: ", error);
+    }
+  };
+
+  const userLogout = async () => {
+    const id = await AsyncStorage.getItem("id");
+    const userId = `user${JSON.parse(id)}`;
+
+    try {
+      await AsyncStorage.multiRemove([userId, "id"]);
+      navigation.replace("BottomTabBar");
+    } catch (error) {
+      console.log("Error logging out the user: ", error);
+    }
+  };
 
   const logout = () => {
     Alert.alert("Logout", "Are you sure you want to logout", [
@@ -29,7 +64,9 @@ const Profile = ({ navigation }) => {
       },
       {
         text: "Continue",
-        onPress: () => console.log("Continue Pressed"),
+        onPress: () => {
+          userLogout();
+        },
       },
       // { defaultIndex: 1 },
     ]);
@@ -53,6 +90,26 @@ const Profile = ({ navigation }) => {
     );
   };
 
+  const userDelete = async () => {
+    try {
+      const id = await AsyncStorage.getItem("id");
+      const userId = `user${JSON.parse(id)}`;
+      const endpoint = `http://10.0.2.2:3001/api/users/${JSON.parse(id)}`;
+      const response = await axios.delete(endpoint);
+
+      console.log(id);
+      console.log(userId);
+
+      if (response.status === 200) {
+        await AsyncStorage.multiRemove([userId, "id"]);
+        navigation.replace("BottomTabBar");
+      }
+    } catch (error) {
+      console.log(error);
+      console.log("Error deleting the user: ", error);
+    }
+  };
+
   const deleteAccount = () => {
     Alert.alert(
       "Delete Account",
@@ -64,7 +121,9 @@ const Profile = ({ navigation }) => {
         },
         {
           text: "Continue",
-          onPress: () => console.log("delete account Pressed"),
+          onPress: () => {
+            userDelete();
+          },
         },
         // { defaultIndex: 1 },
       ]
@@ -89,7 +148,9 @@ const Profile = ({ navigation }) => {
             style={styles.profileImage}
           ></Image>
           <Text style={styles.name}>
-            {userLogin === true ? "Anxhelo" : "Please login into your account!"}
+            {userLogin === true
+              ? userData.username
+              : "Please login into your account!"}
           </Text>
           {userLogin === false ? (
             <TouchableOpacity
@@ -103,7 +164,7 @@ const Profile = ({ navigation }) => {
             </TouchableOpacity>
           ) : (
             <View style={styles.loginBtn}>
-              <Text style={styles.menuText}>anxhelocenollari@gmail.com</Text>
+              <Text style={styles.menuText}>{userData.email}</Text>
             </View>
           )}
 
