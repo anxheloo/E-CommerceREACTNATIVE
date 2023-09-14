@@ -14,13 +14,12 @@ import { AntDesign } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
 // import { useNavigation } from "@react-navigation/native";
-import {useRoute} from '@react-navigation/native'
+import { useRoute } from "@react-navigation/native";
 
 const ProductDetails = ({ navigation }) => {
   // const navigation = useNavigation();
-  const route = useRoute()
-  const {item} = route.params
-
+  const route = useRoute();
+  const { item } = route.params;
 
   const [count, setCount] = useState(1);
 
@@ -58,7 +57,7 @@ const ProductDetails = ({ navigation }) => {
         <Image
           source={{
             // uri: "https://d326fntlu7tb1e.cloudfront.net/uploads/cb2e64a8-ad4c-4d45-b58b-b0c7e11b6bb4-fn1.jpg",
-            uri:item.imageUrl
+            uri: item.imageUrl,
           }}
           style={styles.image}
         ></Image>
@@ -107,9 +106,7 @@ const ProductDetails = ({ navigation }) => {
           <View style={styles.descriptionWrapper}>
             <Text style={styles.desctiption}>Description</Text>
 
-            <Text style={styles.descText}>
-              {item.description}
-            </Text>
+            <Text style={styles.descText}>{item.description}</Text>
           </View>
 
           <View style={{ marginBottom: SIZES.small }}>

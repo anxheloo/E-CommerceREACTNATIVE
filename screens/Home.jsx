@@ -42,10 +42,11 @@ const Home = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView>
       <View style={styles.appBarWrapper}>
         <View style={styles.appBar}>
           <Ionicons name="location-outline" size={24}></Ionicons>
+
           <Text style={styles.locationText}>
             {userData ? userData.location : "Tirane, Albania"}
           </Text>

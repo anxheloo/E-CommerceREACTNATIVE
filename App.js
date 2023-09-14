@@ -14,10 +14,12 @@ import {
   SignUp,
 } from "./screens";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { StatusBar } from "expo-status-bar";
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+  //1.useFonts makes sure that fonts are loaded before everything else
   const [fontsLoaded] = useFonts({
     regular: require("./assets/fonts/Poppins-Regular.ttf"),
     light: require("./assets/fonts/Poppins-Light.ttf"),
@@ -39,6 +41,7 @@ export default function App() {
 
   return (
     <NavigationContainer>
+      {/* <StatusBar hidden></StatusBar> */}
       <Stack.Navigator>
         <Stack.Screen
           name="BottomTabBar"

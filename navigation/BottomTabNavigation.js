@@ -1,14 +1,15 @@
 import React from "react";
 import { Text, View } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Home, Profile, Search } from "../screens";
 import { Ionicons } from "@expo/vector-icons";
-import { COLORS } from "../constants/index";
+// import { COLORS } from "../constants/index";
+import { COLORS } from "../constants";
+import { Home, Profile, Search } from "../screens";
 
 const Tab = createBottomTabNavigator();
 
 const screenOptions = {
-  tabBarShowLable: false,
+  tabBarShowLabel: false,
   tabBarHideOnKeyboard: true,
   headerShown: false,
   tabBarStyle: {
