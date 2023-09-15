@@ -147,11 +147,13 @@ const Profile = ({ navigation }) => {
             source={require("../assets/images/profile.jpeg")}
             style={styles.profileImage}
           ></Image>
+
           <Text style={styles.name}>
             {userLogin === true
               ? userData.username
               : "Please login into your account!"}
           </Text>
+
           {userLogin === false ? (
             <TouchableOpacity
               onPress={() => {
