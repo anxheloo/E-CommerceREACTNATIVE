@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Text,
   View,
@@ -15,6 +15,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
 // import { useNavigation } from "@react-navigation/native";
 import { useRoute } from "@react-navigation/native";
+import AddToCart from "../hook/AddToCart";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ProductDetails = ({ navigation }) => {
   // const navigation = useNavigation();
@@ -22,6 +24,7 @@ const ProductDetails = ({ navigation }) => {
   const { item } = route.params;
 
   const [count, setCount] = useState(1);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const increment = () => {
     setCount(count + 1);
@@ -31,6 +34,69 @@ const ProductDetails = ({ navigation }) => {
     if (count > 1) {
       setCount(count - 1);
     }
+  };
+
+  useEffect(() => {
+    checkUser();
+  }, []);
+
+  const checkUser = async () => {
+    try {
+      const id = await AsyncStorage.getItem("id");
+
+      console.log("THIS IS ID", id);
+
+      if (id !== null) {
+        setIsLoggedIn(true);
+        console.log("user logged in!");
+      } else {
+        console.log("user not logged in!");
+      }
+    } catch (error) {}
+  };
+
+  const handlePress = () => {
+    if (isLoggedIn === false) {
+      navigation.navigate("Login");
+    } else {
+      addToFavorites();
+      console.log("Pressed");
+    }
+  };
+
+  const handleBuy = () => {
+    if (isLoggedIn === false) {
+      navigation.navigate("Login");
+    } else {
+      console.log("Buy Button Pressed");
+    }
+  };
+
+  const handleCart = () => {
+    if (isLoggedIn === false) {
+      navigation.navigate("Login");
+    } else {
+      AddToCart(item._id, count);
+    }
+  };
+
+  const addToFavorites = async () => {
+    const id = await AsyncStorage.getItem("id");
+    const favoritesId = `favorites${JSON.parse(id)}`;
+
+    let productId = item._id;
+
+    let productObject = {
+      title: item.title,
+      id: item._id,
+      supplier: item.supplier,
+      price: item.price,
+      imageUrl: item.imageUrl,
+      product_location: item.product_location,
+    };
+
+    try {
+    } catch (error) {}
   };
 
   return (
@@ -44,7 +110,7 @@ const ProductDetails = ({ navigation }) => {
           <Ionicons name="chevron-back-circle" size={30}></Ionicons>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => {}}>
+        <TouchableOpacity onPress={() => handlePress()}>
           <Ionicons name="heart" size={30} color={COLORS.gray}></Ionicons>
         </TouchableOpacity>
       </View>
@@ -128,11 +194,17 @@ const ProductDetails = ({ navigation }) => {
           </View>
 
           <View style={styles.cartRow}>
-            <TouchableOpacity onPress={() => {}} style={styles.cartBtn}>
+            <TouchableOpacity
+              onPress={() => handleBuy()}
+              style={styles.cartBtn}
+            >
               <Text style={styles.cartTitle}>BUY NOW</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => {}} style={styles.addCart}>
+            <TouchableOpacity
+              onPress={() => handleCart()}
+              style={styles.addCart}
+            >
               <Entypo name="shopping-bag" size={22} color={COLORS.lightWhite} />
             </TouchableOpacity>
           </View>

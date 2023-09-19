@@ -52,6 +52,11 @@ const LoginPage = ({ navigation }) => {
         );
 
         await AsyncStorage.setItem("id", JSON.stringify(response.data._id));
+        await AsyncStorage.setItem(
+          "token",
+          JSON.stringify(response.data.token)
+        );
+        console.log("THIS IS TOKEN: ", response.data.token);
         navigation.replace("BottomTabBar");
 
         // const newUser = await AsyncStorage.getItem(`user${responseData._id}`);
