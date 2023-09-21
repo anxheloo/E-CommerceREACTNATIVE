@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SIZES, COLORS } from "../constants";
@@ -17,6 +18,7 @@ import { Entypo } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
 import AddToCart from "../hook/AddToCart";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { WebView } from "react-native-webview";
 
 const ProductDetails = ({ navigation }) => {
   // const navigation = useNavigation();
@@ -26,6 +28,7 @@ const ProductDetails = ({ navigation }) => {
   const [count, setCount] = useState(1);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [favorites, setFavorites] = useState(false);
+  const [paymentUrl, setPaymentUrl] = useState(false);
 
   const increment = () => {
     setCount(count + 1);
@@ -70,6 +73,7 @@ const ProductDetails = ({ navigation }) => {
     if (isLoggedIn === false) {
       navigation.navigate("Login");
     } else {
+      createCheckOut();
       console.log("Buy Button Pressed");
     }
   };
@@ -144,122 +148,180 @@ const ProductDetails = ({ navigation }) => {
     }
   };
 
+  const createCheckOut = async () => {
+    const id = await AsyncStorage.getItem("id");
+
+    const response = await fetch(
+      "https://stripe-production-cde2.up.railway.app/stripe/create-checkout-session",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: JSON.parse(id),
+          cartItems: [
+            {
+              name: item.title,
+              id: item._id,
+              price: item.price,
+              cartQuantity: count,
+            },
+          ],
+        }),
+      }
+    );
+
+    const { url } = await response.json();
+    setPaymentUrl(url);
+  };
+
+  const onNavigationStateChange = (webViewState) => {
+    const { url } = webViewState;
+
+    if (url && url.includes("checkout-success")) {
+      navigation.navigate("Orders");
+    } else if (url && url.includes("cancel")) {
+      navigation.goBack();
+    }
+  };
+
   return (
-    <>
-      <View style={styles.upperRow}>
-        <TouchableOpacity
-          onPress={() => {
-            navigation.goBack();
-          }}
-        >
-          <Ionicons name="chevron-back-circle" size={30}></Ionicons>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => handlePress()}>
-          <Ionicons
-            name="heart"
-            size={30}
-            color={favorites ? "red" : COLORS.gray}
-          ></Ionicons>
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView
-        style={styles.container}
-        showsVerticalScrollIndicator={false}
-        // overScrollMode="never"
-      >
-        <Image
-          source={{
-            // uri: "https://d326fntlu7tb1e.cloudfront.net/uploads/cb2e64a8-ad4c-4d45-b58b-b0c7e11b6bb4-fn1.jpg",
-            uri: item.imageUrl,
-          }}
-          style={styles.image}
-        ></Image>
-
-        <View style={styles.details}>
-          <View style={styles.titleRow}>
-            <Text style={styles.title}>{item.title}</Text>
-
-            <View style={styles.priceWrapper}>
-              <Text style={styles.price}>$ {item.price}</Text>
-            </View>
-          </View>
-
-          <View style={styles.ratingRow}>
-            <View style={styles.rating}>
-              {[1, 2, 3, 4, 5].map((index) => {
-                return (
-                  <Ionicons name="star" key={index} size={24} color="gold" />
-                );
-              })}
-
-              <Text style={styles.ratingText}>(4.9)</Text>
-            </View>
-
-            <View style={styles.rating}>
-              <TouchableOpacity
-                onPress={() => {
-                  increment();
-                }}
-              >
-                <AntDesign name="pluscircleo" size={20} color="black" />
-              </TouchableOpacity>
-
-              <Text style={styles.ratingText}>{count}</Text>
-
-              <TouchableOpacity
-                onPress={() => {
-                  decrement();
-                }}
-              >
-                <AntDesign name="minuscircleo" size={20} color="black" />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View style={styles.descriptionWrapper}>
-            <Text style={styles.desctiption}>Description</Text>
-
-            <Text style={styles.descText}>{item.description}</Text>
-          </View>
-
-          <View style={{ marginBottom: SIZES.small }}>
-            <View style={styles.location}>
-              <View style={{ flexDirection: "row" }}>
-                <Ionicons name="location-outline" size={20}></Ionicons>
-                <Text> {item.product_location} </Text>
-              </View>
-
-              <View style={{ flexDirection: "row" }}>
-                <MaterialCommunityIcons
-                  name="truck-check-outline"
-                  size={20}
-                  color="black"
-                />
-                <Text> Free Delivery </Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.cartRow}>
+    <View style={styles.container}>
+      {paymentUrl ? (
+        <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+          <WebView
+            source={{ uri: paymentUrl }}
+            onNavigationStateChange={onNavigationStateChange}
+          ></WebView>
+        </SafeAreaView>
+      ) : (
+        <View style={styles.container}>
+          <View style={styles.upperRow}>
             <TouchableOpacity
-              onPress={() => handleBuy()}
-              style={styles.cartBtn}
+              onPress={() => {
+                navigation.goBack();
+              }}
             >
-              <Text style={styles.cartTitle}>BUY NOW</Text>
+              <Ionicons name="chevron-back-circle" size={30}></Ionicons>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => handleCart()}
-              style={styles.addCart}
-            >
-              <Entypo name="shopping-bag" size={22} color={COLORS.lightWhite} />
+            <TouchableOpacity onPress={() => handlePress()}>
+              <Ionicons
+                name="heart"
+                size={30}
+                color={favorites ? "red" : COLORS.gray}
+              ></Ionicons>
             </TouchableOpacity>
           </View>
+
+          <ScrollView
+            style={styles.container}
+            showsVerticalScrollIndicator={false}
+            // overScrollMode="never"
+          >
+            <Image
+              source={{
+                // uri: "https://d326fntlu7tb1e.cloudfront.net/uploads/cb2e64a8-ad4c-4d45-b58b-b0c7e11b6bb4-fn1.jpg",
+                uri: item.imageUrl,
+              }}
+              style={styles.image}
+            ></Image>
+
+            <View style={styles.details}>
+              <View style={styles.titleRow}>
+                <Text style={styles.title}>{item.title}</Text>
+
+                <View style={styles.priceWrapper}>
+                  <Text style={styles.price}>$ {item.price}</Text>
+                </View>
+              </View>
+
+              <View style={styles.ratingRow}>
+                <View style={styles.rating}>
+                  {[1, 2, 3, 4, 5].map((index) => {
+                    return (
+                      <Ionicons
+                        name="star"
+                        key={index}
+                        size={24}
+                        color="gold"
+                      />
+                    );
+                  })}
+
+                  <Text style={styles.ratingText}>(4.9)</Text>
+                </View>
+
+                <View style={styles.rating}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      increment();
+                    }}
+                  >
+                    <AntDesign name="pluscircleo" size={20} color="black" />
+                  </TouchableOpacity>
+
+                  <Text style={styles.ratingText}>{count}</Text>
+
+                  <TouchableOpacity
+                    onPress={() => {
+                      decrement();
+                    }}
+                  >
+                    <AntDesign name="minuscircleo" size={20} color="black" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={styles.descriptionWrapper}>
+                <Text style={styles.desctiption}>Description</Text>
+
+                <Text style={styles.descText}>{item.description}</Text>
+              </View>
+
+              <View style={{ marginBottom: SIZES.small }}>
+                <View style={styles.location}>
+                  <View style={{ flexDirection: "row" }}>
+                    <Ionicons name="location-outline" size={20}></Ionicons>
+                    <Text> {item.product_location} </Text>
+                  </View>
+
+                  <View style={{ flexDirection: "row" }}>
+                    <MaterialCommunityIcons
+                      name="truck-check-outline"
+                      size={20}
+                      color="black"
+                    />
+                    <Text> Free Delivery </Text>
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.cartRow}>
+                <TouchableOpacity
+                  onPress={() => handleBuy()}
+                  style={styles.cartBtn}
+                >
+                  <Text style={styles.cartTitle}>BUY NOW</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => handleCart()}
+                  style={styles.addCart}
+                >
+                  <Entypo
+                    name="shopping-bag"
+                    size={22}
+                    color={COLORS.lightWhite}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </ScrollView>
         </View>
-      </ScrollView>
-    </>
+      )}
+    </View>
   );
 };
 

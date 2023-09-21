@@ -83,11 +83,22 @@ const Profile = ({ navigation }) => {
         },
         {
           text: "Continue",
-          onPress: () => console.log("Continue Pressed"),
+          onPress: () => cacheClear(),
         },
         // { defaultIndex: 1 },
       ]
     );
+  };
+
+  const cacheClear = async () => {
+    const id = await AsyncStorage.getItem("id");
+    const favId = `favorites${JSON.parse(id)}`;
+
+    try {
+      await AsyncStorage.removeItem(favId);
+    } catch (error) {
+      console.log("Error logging out the user: ", error);
+    }
   };
 
   const userDelete = async () => {

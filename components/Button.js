@@ -9,11 +9,12 @@ const Button = ({ onPress, title, isValid, loader }) => {
       onPress={onPress}
       style={styles.buttonContainer(!isValid ? COLORS.gray : COLORS.primary)}
     >
-      {loader === false ? (
+      {/* {loader === false ? (
         <Text style={styles.btnText}>{title}</Text>
       ) : (
         <ActivityIndicator></ActivityIndicator>
-      )}
+      )} */}
+      <Text style={styles.btnText}>{title}</Text>
     </TouchableOpacity>
   );
 };

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Text,
   View,
@@ -11,10 +11,13 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { COLORS, SIZES, SHADOWS } from "../constants";
 import fetchCart from "../hook/fetchCart";
 import { ActivityIndicator } from "react-native";
+import CartTile from "../components/cart/cartTile";
+import Button from "../components/Button";
 
 const Cart = ({ navigation }) => {
   const { data, refetch, loading, error } = fetchCart();
-  console.log("THIS IS DATA:", data);
+  const [selected, setSelected] = useState(null);
+  const [select, setSelect] = useState(false);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -36,8 +39,22 @@ const Cart = ({ navigation }) => {
         <FlatList
           data={data}
           keyExtractor={(item) => item._id}
-          renderItem={({ item }) => <Text>{item.cartItem.title}</Text>}
+          renderItem={({ item }) => (
+            <CartTile
+              item={item}
+              onPress={() => {
+                setSelect(!select), setSelected(item);
+              }}
+              select={select}
+            ></CartTile>
+          )}
         ></FlatList>
+      )}
+
+      {select === false ? (
+        <View></View>
+      ) : (
+        <Button title={"Checkout"} isValid={select} onPress={() => {}}></Button>
       )}
     </SafeAreaView>
   );
